@@ -103,6 +103,17 @@ router.post("/login", async (req: Request, res: Response) => {
   }
 });
 
+// Helper to dynamically construct OAuth callback URL for local & production deployment
+function getOAuthCallbackUrl(req: Request): string {
+  const envCallback = process.env.GOOGLE_REDIRECT_URI || process.env.GOOGLE_CALLBACK_URL;
+  if (envCallback && (!envCallback.includes("localhost") || config.NODE_ENV !== "production")) {
+    return envCallback;
+  }
+  const host = req.get("host") || "localhost:5000";
+  const protocol = req.protocol === "https" || req.get("x-forwarded-proto") === "https" ? "https" : "http";
+  return `${protocol}://${host}/api/auth/google/callback`;
+}
+
 // Start Google OAuth flow
 router.get("/google", (req: Request, res: Response, next: any) => {
   let frontendUrl = config.FRONTEND_URL;
@@ -122,12 +133,15 @@ router.get("/google", (req: Request, res: Response, next: any) => {
     );
   }
 
+  const callbackURL = getOAuthCallbackUrl(req);
+
   try {
     passport.authenticate("google", {
       scope: ["profile", "email"],
       session: false,
       state: frontendUrl,
-    })(req, res, next);
+      callbackURL,
+    } as any)(req, res, next);
   } catch (err: any) {
     console.error("❌ Exception initiating Google OAuth:", err);
     return res.redirect(
@@ -154,7 +168,9 @@ router.get("/google/callback", (req: Request, res: Response, next: any) => {
     return res.redirect(`${targetFrontendUrl}/auth?error=${encodeURIComponent(errorDesc)}`);
   }
 
-  passport.authenticate("google", { session: false }, (err: any, user: any, info: any) => {
+  const callbackURL = getOAuthCallbackUrl(req);
+
+  passport.authenticate("google", { session: false, callbackURL } as any, (err: any, user: any, info: any) => {
     if (err || !user) {
       console.error("❌ Google OAuth callback failed:", err || info);
       const errorMsg =

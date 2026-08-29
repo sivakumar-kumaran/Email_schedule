@@ -21,6 +21,9 @@ import { redisConnection } from "./queues/connection";
 export function createApp(): Express {
   const app = express();
 
+  // Trust reverse proxy headers (Render, Railway, Vercel, Heroku) for HTTPS & Host detection
+  app.set("trust proxy", 1);
+
   app.use(
     helmet({
       contentSecurityPolicy: false,
