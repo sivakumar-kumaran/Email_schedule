@@ -47,6 +47,13 @@ export const Header: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [hasToken, setHasToken] = useState(false);
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      setHasToken(!!localStorage.getItem("reachinbox_token"));
+    }
+  }, [pathname]);
 
   const isDashboard = pathname?.startsWith("/dashboard");
   const isQueue = pathname?.startsWith("/queue");
@@ -54,6 +61,7 @@ export const Header: React.FC = () => {
   const { data: user } = useQuery({
     queryKey: ["auth-me"],
     queryFn: authApi.getMe,
+    enabled: hasToken,
     retry: 0,
     staleTime: 60000,
   });

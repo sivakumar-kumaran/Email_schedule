@@ -41,7 +41,8 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401 && typeof window !== "undefined") {
-      if (!window.location.pathname.startsWith("/login") && window.location.pathname !== "/") {
+      const p = window.location.pathname;
+      if (p !== "/" && !p.startsWith("/auth") && !p.startsWith("/login")) {
         localStorage.removeItem("reachinbox_token");
         window.location.href = "/";
       }
