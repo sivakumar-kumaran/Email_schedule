@@ -10,7 +10,7 @@ import {
 const RAW_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   process.env.NEXT_PUBLIC_BACKEND_URL ||
-  "http://localhost:5000/api";
+  "https://email-schedule-gr55.onrender.com/api";
 
 export const BACKEND_URL = RAW_URL.endsWith("/api") ? RAW_URL : `${RAW_URL}/api`;
 export const ROOT_URL = RAW_URL.replace(/\/api\/?$/, "");
