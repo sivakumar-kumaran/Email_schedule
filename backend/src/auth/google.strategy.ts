@@ -75,21 +75,25 @@ export function configurePassport() {
             }
           }
 
-          // Ensure default sender exists for this user's email
-          await prisma.sender.upsert({
-            where: {
-              userId_address: {
+          // Ensure default sender exists for this user's email safely
+          try {
+            await prisma.sender.upsert({
+              where: {
+                userId_address: {
+                  userId: user.id,
+                  address: user.email,
+                },
+              },
+              update: {},
+              create: {
                 userId: user.id,
                 address: user.email,
+                name: user.name,
               },
-            },
-            update: {},
-            create: {
-              userId: user.id,
-              address: user.email,
-              name: user.name,
-            },
-          });
+            });
+          } catch (senderErr) {
+            console.warn("⚠️ Non-fatal warning: Failed to auto-create sender during Google login:", senderErr);
+          }
 
           return done(null, user);
         } catch (err) {
