@@ -113,16 +113,12 @@ router.get(
 );
 
 // Google OAuth callback
-router.get(
-  "/google/callback",
-  passport.authenticate("google", {
-    session: false,
-    failureRedirect: `${config.FRONTEND_URL}/?error=auth_failed`,
-  }),
-  (req: Request, res: Response) => {
-    const user = req.user as any;
-    if (!user) {
-      return res.redirect(`${config.FRONTEND_URL}/?error=no_user`);
+router.get("/google/callback", (req: Request, res: Response, next: any) => {
+  passport.authenticate("google", { session: false }, (err: any, user: any, info: any) => {
+    if (err || !user) {
+      console.error("❌ Google OAuth callback error:", err || info);
+      const errorMsg = encodeURIComponent(err?.message || info?.message || "auth_failed");
+      return res.redirect(`${config.FRONTEND_URL}/auth?error=${errorMsg}`);
     }
 
     const token = generateToken({
@@ -131,8 +127,8 @@ router.get(
     });
 
     return res.redirect(`${config.FRONTEND_URL}/auth/callback?token=${encodeURIComponent(token)}`);
-  }
-);
+  })(req, res, next);
+});
 
 // Get current user details
 router.get("/me", requireAuth, async (req: Request, res: Response) => {

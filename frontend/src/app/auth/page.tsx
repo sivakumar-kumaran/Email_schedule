@@ -39,6 +39,10 @@ function AuthForm() {
     if (tabParam === "signup" || tabParam === "login") {
       setActiveTab(tabParam);
     }
+    const errorParam = searchParams.get("error");
+    if (errorParam) {
+      toast.error(`Authentication failed: ${decodeURIComponent(errorParam)}`);
+    }
   }, [searchParams]);
 
   useEffect(() => {

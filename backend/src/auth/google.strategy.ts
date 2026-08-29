@@ -18,24 +18,37 @@ export function configurePassport() {
             return done(new Error("No email found in Google profile"));
           }
 
-          const name = profile.displayName || email.split("@")[0];
+          const normalizedEmail = email.toLowerCase();
+          const name = profile.displayName || normalizedEmail.split("@")[0];
           const avatarUrl = profile.photos?.[0]?.value;
 
-          // Upsert user
-          const user = await prisma.user.upsert({
-            where: { googleId: profile.id },
-            update: {
-              email,
-              name,
-              avatarUrl,
-            },
-            create: {
-              googleId: profile.id,
-              email,
-              name,
-              avatarUrl,
+          // Find existing user by email or googleId to avoid unique constraint crashes
+          let user = await prisma.user.findFirst({
+            where: {
+              OR: [{ googleId: profile.id }, { email: normalizedEmail }],
             },
           });
+
+          if (user) {
+            user = await prisma.user.update({
+              where: { id: user.id },
+              data: {
+                googleId: profile.id,
+                email: normalizedEmail,
+                name: user.name || name,
+                avatarUrl: avatarUrl || user.avatarUrl,
+              },
+            });
+          } else {
+            user = await prisma.user.create({
+              data: {
+                googleId: profile.id,
+                email: normalizedEmail,
+                name,
+                avatarUrl,
+              },
+            });
+          }
 
           // Ensure default sender exists for this user's email
           await prisma.sender.upsert({
