@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="qbg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#090e1a" />
+      <stop offset="100%" stopColor="#050811" />
+    </linearGradient>
+    <linearGradient id="bullGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#22d3ee" />
+      <stop offset="50%" stopColor="#818cf8" />
+      <stop offset="100%" stopColor="#c084fc" />
+    </linearGradient>
+    <linearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#38bdf8" />
+      <stop offset="100%" stopColor="#34d399" />
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="url(#qbg)" stroke="#22d3ee" stroke-width="1.5" stroke-opacity="0.5" />
+  <!-- Hexagon Stack -->
+  <path d="M16 4L26 9.5V22.5L16 28L6 22.5V9.5L16 4Z" fill="url(#bullGrad)" fill-opacity="0.15" stroke="url(#bullGrad)" stroke-width="1.75" stroke-linejoin="round" />
+  <!-- Electric Velocity Bolt -->
+  <path d="M17 7L10 17H16L15 25L22 15H16L17 7Z" fill="url(#boltGrad)" fill-opacity="0.9" stroke="#ffffff" stroke-width="0.75" stroke-linejoin="round" />
+  <!-- Status Dots -->
+  <circle cx="23" cy="10" r="1.5" fill="#22d3ee" />
+  <circle cx="9" cy="22" r="1.5" fill="#a855f7" />
+</svg>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#1e1b4b" />
+      <stop offset="100%" stopColor="#0f172a" />
+    </linearGradient>
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#c084fc" />
+      <stop offset="50%" stopColor="#818cf8" />
+      <stop offset="100%" stopColor="#22d3ee" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stopColor="#9333ea" />
+      <stop offset="100%" stopColor="#06b6d4" />
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" fill="url(#bgGrad)" stroke="#818cf8" stroke-width="1.5" />
+  <path d="M5 9C5 7.34315 6.34315 6 8 6H24C25.6569 6 27 8.34315 27 9V23C27 24.6569 25.6569 26 24 26H8C6.34315 26 5 24.6569 5 23V9Z" fill="url(#brandGrad)" fill-opacity="0.25" stroke="url(#brandGrad)" stroke-width="1.8" />
+  <path d="M5 9L16 18L27 9" stroke="url(#brandGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M16 18L9 26M16 18L23 26" stroke="url(#accent)" stroke-width="1.5" stroke-linecap="round" />
+  <circle cx="16" cy="18" r="2.2" fill="#38bdf8" />
+</svg>
