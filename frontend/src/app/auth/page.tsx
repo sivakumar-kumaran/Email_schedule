@@ -48,7 +48,7 @@ function AuthForm() {
   useEffect(() => {
     const token = localStorage.getItem("reachinbox_token");
     if (token) {
-      router.push("/dashboard");
+      router.push("/home");
     }
   }, [router]);
 
@@ -61,7 +61,7 @@ function AuthForm() {
       setIsDemoLoading(true);
       await authApi.devLogin("demo.user@reachinbox.ai", "Alex Rivera");
       toast.success("Welcome to ReachInbox Scheduler!");
-      router.push("/dashboard");
+      router.push("/home");
     } catch (err: any) {
       toast.error(err.response?.data?.error || "Failed to log in");
     } finally {
@@ -93,7 +93,7 @@ function AuthForm() {
         await authApi.login({ email, password });
         toast.success("Welcome back!");
       }
-      router.push("/dashboard");
+      router.push("/home");
     } catch (err: any) {
       toast.error(err.response?.data?.error || "Authentication failed");
     } finally {
