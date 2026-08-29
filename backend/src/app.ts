@@ -29,7 +29,10 @@ export function createApp(): Express {
 
   app.use(
     cors({
-      origin: [config.FRONTEND_URL, "http://localhost:3000"],
+      origin: (origin, callback) => {
+        // Allow requests with no origin (curl, postman) or any frontend origin
+        callback(null, true);
+      },
       credentials: true,
       methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
