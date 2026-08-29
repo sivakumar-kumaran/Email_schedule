@@ -113,29 +113,55 @@ router.get("/google", (req: Request, res: Response, next: any) => {
       frontendUrl = new URL(req.headers.referer).origin;
     } catch {}
   }
+  frontendUrl = frontendUrl.replace(/\/$/, "");
 
-  passport.authenticate("google", {
-    scope: ["profile", "email"],
-    session: false,
-    state: frontendUrl,
-  })(req, res, next);
+  if (!config.GOOGLE_CLIENT_ID || !config.GOOGLE_CLIENT_SECRET) {
+    console.error("❌ Google OAuth failed: Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET in server environment");
+    return res.redirect(
+      `${frontendUrl}/auth?error=${encodeURIComponent("Google OAuth credentials missing on backend server")}`
+    );
+  }
+
+  try {
+    passport.authenticate("google", {
+      scope: ["profile", "email"],
+      session: false,
+      state: frontendUrl,
+    })(req, res, next);
+  } catch (err: any) {
+    console.error("❌ Exception initiating Google OAuth:", err);
+    return res.redirect(
+      `${frontendUrl}/auth?error=${encodeURIComponent(err?.message || "auth_initiation_failed")}`
+    );
+  }
 });
 
 // Google OAuth callback
 router.get("/google/callback", (req: Request, res: Response, next: any) => {
+  let targetFrontendUrl = config.FRONTEND_URL;
+  if (req.query.state && typeof req.query.state === "string") {
+    targetFrontendUrl = req.query.state;
+  }
+  targetFrontendUrl = targetFrontendUrl.replace(/\/$/, "");
+
+  // Check if Google returned an explicit OAuth error parameter
+  if (req.query.error) {
+    const errorDesc =
+      (req.query.error_description as string) ||
+      (req.query.error as string) ||
+      "google_auth_failed";
+    console.error("❌ Google OAuth returned error parameter:", errorDesc);
+    return res.redirect(`${targetFrontendUrl}/auth?error=${encodeURIComponent(errorDesc)}`);
+  }
+
   passport.authenticate("google", { session: false }, (err: any, user: any, info: any) => {
-    let targetFrontendUrl = config.FRONTEND_URL;
-    if (req.query.state && typeof req.query.state === "string") {
-      targetFrontendUrl = req.query.state;
-    }
-
-    // Strip trailing slash if present
-    targetFrontendUrl = targetFrontendUrl.replace(/\/$/, "");
-
     if (err || !user) {
-      console.error("❌ Google OAuth callback error:", err || info);
-      const errorMsg = encodeURIComponent(err?.message || info?.message || "auth_failed");
-      return res.redirect(`${targetFrontendUrl}/auth?error=${errorMsg}`);
+      console.error("❌ Google OAuth callback failed:", err || info);
+      const errorMsg =
+        err?.message ||
+        info?.message ||
+        (typeof info === "string" ? info : "Authentication failed with Google");
+      return res.redirect(`${targetFrontendUrl}/auth?error=${encodeURIComponent(errorMsg)}`);
     }
 
     const token = generateToken({

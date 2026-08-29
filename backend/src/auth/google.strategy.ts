@@ -22,32 +22,57 @@ export function configurePassport() {
           const name = profile.displayName || normalizedEmail.split("@")[0];
           const avatarUrl = profile.photos?.[0]?.value;
 
-          // Find existing user by email or googleId to avoid unique constraint crashes
-          let user = await prisma.user.findFirst({
-            where: {
-              OR: [{ googleId: profile.id }, { email: normalizedEmail }],
-            },
+          // 1. Try to find user by exact googleId first
+          let user = await prisma.user.findUnique({
+            where: { googleId: profile.id },
           });
 
           if (user) {
+            // Update profile fields safely
+            let updateEmail = user.email;
+            if (user.email !== normalizedEmail) {
+              const existingEmailUser = await prisma.user.findUnique({
+                where: { email: normalizedEmail },
+              });
+              if (!existingEmailUser) {
+                updateEmail = normalizedEmail;
+              }
+            }
+
             user = await prisma.user.update({
               where: { id: user.id },
               data: {
-                googleId: profile.id,
-                email: normalizedEmail,
+                email: updateEmail,
                 name: user.name || name,
                 avatarUrl: avatarUrl || user.avatarUrl,
               },
             });
           } else {
-            user = await prisma.user.create({
-              data: {
-                googleId: profile.id,
-                email: normalizedEmail,
-                name,
-                avatarUrl,
-              },
+            // 2. If not found by googleId, check by email (e.g. created via email signup/dev login)
+            const existingUserByEmail = await prisma.user.findUnique({
+              where: { email: normalizedEmail },
             });
+
+            if (existingUserByEmail) {
+              user = await prisma.user.update({
+                where: { id: existingUserByEmail.id },
+                data: {
+                  googleId: profile.id,
+                  name: existingUserByEmail.name || name,
+                  avatarUrl: avatarUrl || existingUserByEmail.avatarUrl,
+                },
+              });
+            } else {
+              // 3. Create fresh user
+              user = await prisma.user.create({
+                data: {
+                  googleId: profile.id,
+                  email: normalizedEmail,
+                  name,
+                  avatarUrl,
+                },
+              });
+            }
           }
 
           // Ensure default sender exists for this user's email
@@ -68,6 +93,7 @@ export function configurePassport() {
 
           return done(null, user);
         } catch (err) {
+          console.error("❌ Error in Google Strategy callback:", err);
           return done(err as Error);
         }
       }

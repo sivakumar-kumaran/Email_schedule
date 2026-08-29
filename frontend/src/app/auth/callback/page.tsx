@@ -14,8 +14,8 @@ function CallbackContent() {
     const error = searchParams.get("error");
 
     if (error) {
-      toast.error(`Authentication failed: ${error}`);
-      router.push("/");
+      toast.error(`Authentication failed: ${decodeURIComponent(error)}`);
+      router.push(`/auth?error=${encodeURIComponent(error)}`);
       return;
     }
 
@@ -24,8 +24,8 @@ function CallbackContent() {
       toast.success("Successfully authenticated!");
       window.location.href = "/dashboard";
     } else {
-      toast.error("No token received from auth server");
-      router.push("/");
+      toast.error("No authentication token received from server");
+      router.push("/auth?error=" + encodeURIComponent("No authentication token received"));
     }
   }, [router, searchParams]);
 
