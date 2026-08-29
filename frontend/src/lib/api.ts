@@ -7,13 +7,22 @@ import {
   User,
 } from "../types/api";
 
-const RAW_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  process.env.NEXT_PUBLIC_BACKEND_URL ||
-  "https://email-schedule-gr55.onrender.com/api";
+const getInitialBackendUrl = (): string => {
+  if (typeof window !== "undefined") {
+    const isLocalhost =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1";
+    if (isLocalhost) {
+      return "http://localhost:5000/api";
+    }
+  }
+  const rawEnv = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
+  const raw = rawEnv || "https://email-schedule-gr55.onrender.com/api";
+  return raw.endsWith("/api") ? raw : `${raw}/api`;
+};
 
-export const BACKEND_URL = RAW_URL.endsWith("/api") ? RAW_URL : `${RAW_URL}/api`;
-export const ROOT_URL = RAW_URL.replace(/\/api\/?$/, "");
+export const BACKEND_URL = getInitialBackendUrl();
+export const ROOT_URL = BACKEND_URL.replace(/\/api\/?$/, "");
 
 export const api = axios.create({
   baseURL: BACKEND_URL,
@@ -22,10 +31,19 @@ export const api = axios.create({
   },
 });
 
-// Attach JWT token from localStorage to every request
+// Attach JWT token from localStorage to every request and ensure correct baseURL
 api.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") {
+      const isLocalhost =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
+      if (isLocalhost) {
+        config.baseURL = "http://localhost:5000/api";
+      } else if (!config.baseURL || config.baseURL.includes("localhost")) {
+        const rawEnv = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || "https://email-schedule-gr55.onrender.com/api";
+        config.baseURL = rawEnv.endsWith("/api") ? rawEnv : `${rawEnv}/api`;
+      }
       const token = localStorage.getItem("reachinbox_token");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -83,8 +101,22 @@ export const authApi = {
     return res.data;
   },
   getGoogleAuthUrl: () => {
+    let backend = "https://email-schedule-gr55.onrender.com/api";
+    if (typeof window !== "undefined") {
+      const isLocalhost =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
+      if (isLocalhost) {
+        backend = "http://localhost:5000/api";
+      } else {
+        const envUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
+        if (envUrl) {
+          backend = envUrl.endsWith("/api") ? envUrl : `${envUrl}/api`;
+        }
+      }
+    }
     const origin = typeof window !== "undefined" ? window.location.origin : "";
-    return `${BACKEND_URL}/auth/google${origin ? `?frontend_url=${encodeURIComponent(origin)}` : ""}`;
+    return `${backend}/auth/google${origin ? `?frontend_url=${encodeURIComponent(origin)}` : ""}`;
   },
   getBullBoardUrl: () => "/queue",
   getRawBullBoardUrl: () =>

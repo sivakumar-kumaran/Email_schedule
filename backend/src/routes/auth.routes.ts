@@ -105,11 +105,19 @@ router.post("/login", async (req: Request, res: Response) => {
 
 // Helper to dynamically construct OAuth callback URL for local & production deployment
 function getOAuthCallbackUrl(req: Request): string {
+  const host = req.get("host") || "localhost:5000";
+  const isLocalHost = host.includes("localhost") || host.includes("127.0.0.1");
+
+  if (isLocalHost) {
+    const port = host.split(":")[1] || "5000";
+    return `http://localhost:${port}/api/auth/google/callback`;
+  }
+
   const envCallback = process.env.GOOGLE_REDIRECT_URI || process.env.GOOGLE_CALLBACK_URL;
-  if (envCallback && (!envCallback.includes("localhost") || config.NODE_ENV !== "production")) {
+  if (envCallback) {
     return envCallback;
   }
-  const host = req.get("host") || "localhost:5000";
+
   const protocol = req.protocol === "https" || req.get("x-forwarded-proto") === "https" ? "https" : "http";
   return `${protocol}://${host}/api/auth/google/callback`;
 }
