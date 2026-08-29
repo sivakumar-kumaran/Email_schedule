@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.next/
+.env
+.env.local
+.env.production
+backend/.env
+frontend/.env
+frontend/.env.local
+*.log
+*.pid
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.tsbuildinfo
+coverage/
