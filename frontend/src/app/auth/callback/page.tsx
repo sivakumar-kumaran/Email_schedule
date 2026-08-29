@@ -22,7 +22,7 @@ function CallbackContent() {
     if (token) {
       localStorage.setItem("reachinbox_token", token);
       toast.success("Successfully authenticated!");
-      window.location.href = "/home";
+      window.location.href = "/dashboard";
     } else {
       toast.error("No authentication token received from server");
       router.push("/auth?error=" + encodeURIComponent("No authentication token received"));

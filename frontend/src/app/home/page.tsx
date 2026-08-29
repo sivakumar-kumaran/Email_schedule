@@ -206,6 +206,14 @@ function MockupPanel() {
 
 /* ────────────────────────── Page ───────────────────────────── */
 export default function HomePage() {
+  const [hasToken, setHasToken] = useState(false);
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      setHasToken(!!localStorage.getItem("reachinbox_token"));
+    }
+  }, []);
+
   return (
     <main className="min-h-screen bg-[#07090e] text-white overflow-x-hidden">
 
@@ -233,14 +241,14 @@ export default function HomePage() {
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 mt-2">
-            <Link href="/auth">
+            <Link href={hasToken ? "/dashboard" : "/auth"}>
               <Button
                 variant="gradient"
                 size="lg"
                 leftIcon={<Sparkles className="w-4 h-4" />}
                 rightIcon={<ArrowRight className="w-4 h-4" />}
               >
-                Get Started
+                {hasToken ? "Go to Dashboard" : "Get Started"}
               </Button>
             </Link>
             <Link href="/about">
@@ -395,14 +403,14 @@ export default function HomePage() {
           <p className="text-slate-400 mb-8 text-lg">
             Connect your Google account and send your first batch today.
           </p>
-          <Link href="/auth">
+          <Link href={hasToken ? "/dashboard" : "/auth"}>
             <Button
               variant="gradient"
               size="lg"
               leftIcon={<Sparkles className="w-4 h-4" />}
               rightIcon={<ArrowRight className="w-4 h-4" />}
             >
-              Sign in with Google
+              {hasToken ? "Go to Dashboard" : "Sign in with Google"}
             </Button>
           </Link>
         </div>
