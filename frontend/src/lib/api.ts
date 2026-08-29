@@ -81,7 +81,10 @@ export const authApi = {
     }
     return res.data;
   },
-  getGoogleAuthUrl: () => `${BACKEND_URL}/auth/google`,
+  getGoogleAuthUrl: () => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    return `${BACKEND_URL}/auth/google${origin ? `?frontend_url=${encodeURIComponent(origin)}` : ""}`;
+  },
   getBullBoardUrl: () => "/queue",
   getRawBullBoardUrl: () =>
     process.env.NEXT_PUBLIC_BULL_BOARD_URL || `${ROOT_URL}/admin/queues`,

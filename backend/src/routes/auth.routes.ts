@@ -104,21 +104,38 @@ router.post("/login", async (req: Request, res: Response) => {
 });
 
 // Start Google OAuth flow
-router.get(
-  "/google",
+router.get("/google", (req: Request, res: Response, next: any) => {
+  let frontendUrl = config.FRONTEND_URL;
+  if (req.query.frontend_url && typeof req.query.frontend_url === "string") {
+    frontendUrl = req.query.frontend_url;
+  } else if (req.headers.referer) {
+    try {
+      frontendUrl = new URL(req.headers.referer).origin;
+    } catch {}
+  }
+
   passport.authenticate("google", {
     scope: ["profile", "email"],
     session: false,
-  })
-);
+    state: frontendUrl,
+  })(req, res, next);
+});
 
 // Google OAuth callback
 router.get("/google/callback", (req: Request, res: Response, next: any) => {
   passport.authenticate("google", { session: false }, (err: any, user: any, info: any) => {
+    let targetFrontendUrl = config.FRONTEND_URL;
+    if (req.query.state && typeof req.query.state === "string") {
+      targetFrontendUrl = req.query.state;
+    }
+
+    // Strip trailing slash if present
+    targetFrontendUrl = targetFrontendUrl.replace(/\/$/, "");
+
     if (err || !user) {
       console.error("❌ Google OAuth callback error:", err || info);
       const errorMsg = encodeURIComponent(err?.message || info?.message || "auth_failed");
-      return res.redirect(`${config.FRONTEND_URL}/auth?error=${errorMsg}`);
+      return res.redirect(`${targetFrontendUrl}/auth?error=${errorMsg}`);
     }
 
     const token = generateToken({
@@ -126,7 +143,7 @@ router.get("/google/callback", (req: Request, res: Response, next: any) => {
       email: user.email,
     });
 
-    return res.redirect(`${config.FRONTEND_URL}/auth/callback?token=${encodeURIComponent(token)}`);
+    return res.redirect(`${targetFrontendUrl}/auth/callback?token=${encodeURIComponent(token)}`);
   })(req, res, next);
 });
 
